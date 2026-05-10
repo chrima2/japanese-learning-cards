@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Englisch–Japanisch Lernkarten</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #f5f5f5;
+      color: #222;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: stretch;
+      padding: 16px;
+    }
+
+    .app {
+      background: #ffffff;
+      width: 100%;
+      max-width: 420px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    header {
+      padding: 12px 16px;
+      border-bottom: 1px solid #e0e0e0;
+      background: #2d7d6f;
+      color: #fff;
+    }
+
+    .header-title {
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .header-sub {
+      font-size: 12px;
+      opacity: 0.9;
+      margin-top: 2px;
+    }
+
+    main {
+      flex: 1;
+      padding: 12px;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .screen { display: none; }
+    .screen.active { display: block; }
+
+    .category-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .category-card {
+      background: #ffffff;
+      border-radius: 10px;
+      padding: 12px;
+      border: 1px solid #e0e0e0;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    .category-title {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .category-progress {
+      font-size: 12px;
+      color: #666;
+      margin-bottom: 8px;
+    }
+
+    .category-buttons {
+      display: flex;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    button {
+      border-radius: 8px;
+      border: none;
+      padding: 10px 12px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.05s, box-shadow 0.1s;
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    button:active {
+      transform: translateY(1px);
+      box-shadow: none;
+    }
+
+    .btn-primary {
+      background: #2d7d6f;
+      color: #fff;
+      flex: 1;
+    }
+
+    .btn-secondary {
+      background: #f0f0f0;
+      color: #222;
+      flex: 1;
+    }
+
+    .btn-small {
+      padding: 8px 10px;
+      font-size: 12px;
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: #ffffff;
+      padding: 4px 8px;
+      font-size: 12px;
+      border-radius: 6px;
+      border: 1px solid rgba(255,255,255,0.4);
+    }
+
+    .btn-disabled {
+      opacity: 0.4;
+      cursor: default;
+    }
+
+    .top-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      font-size: 12px;
+      color: #555;
+    }
+
+    .progress-bar {
+      height: 4px;
+      background: #e0e0e0;
+      border-radius: 999px;
+      overflow: hidden;
+      margin-bottom: 10px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #2d7d6f, #47a08f);
+      transition: width 0.25s ease;
+    }
+
+    .card {
+      background: #ffffff;
+      border-radius: 10px;
+      padding: 14px;
+      border: 1px solid #e0e0e0;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+      margin-bottom: 12px;
+    }
+
+    .label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #777;
+      margin-bottom: 4px;
+    }
+
+    .english {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .japanese {
+      font-size: 22px;
+      margin-bottom: 4px;
+    }
+
+    .romaji {
+      font-size: 14px;
+      color: #444;
+      margin-bottom: 6px;
+    }
+
+    .sentence-highlight {
+      background: #e8f5f3;
+      border-radius: 4px;
+      padding: 0 2px;
+    }
+
+    .controls {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 6px;
+    }
+
+    .controls-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .info-text {
+      font-size: 11px;
+      color: #777;
+      margin-top: 4px;
+      line-height: 1.4;
+    }
+
+    .toggle-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 4px 0 6px;
+      font-size: 12px;
+      color: #555;
+    }
+
+    .toggle-row label {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .footer {
+      padding: 8px 10px;
+      border-top: 1px solid #e0e0e0;
+      background: #ffffff;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+      color: #666;
+    }
+
+    .footer button {
+      font-size: 11px;
+      padding: 6px 10px;
+      font-weight: 500;
+    }
+
+    input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <div class="header-title">Englisch–Japanisch Lernkarten</div>
+          <div class="header-sub" id="headerSubtitle">Kategorie wählen</div>
+        </div>
+        <button class="btn-ghost" id="homeButton" style="display:none;">Home</button>
+      </div>
+    </header>
+
+    <main>
+      <!-- Startscreen: Kategorien -->
+      <section id="screenHome" class="screen active">
+        <div class="card" style="margin-bottom:12px;">
+          <div class="label">Heute</div>
+          <div class="top-row">
+            <span id="todayInfo">Heute noch nicht gelernt.</span>
+            <span id="streakInfo">Streak: 0 Tage</span>
+          </div>
+        </div>
+
+        <div class="category-list" id="categoryList"></div>
+      </section>
+
+      <!-- Lernsceen -->
+      <section id="screenLearn" class="screen">
+        <div class="top-row">
+          <span id="modeInfo">Wörter – Restaurant</span>
+          <span id="counterInfo">1 / 10</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+
+        <div class="card">
+          <div class="label" id="labelType">Englisch</div>
+          <div class="english" id="englishText"></div>
+
+          <div class="toggle-row">
+            <span id="jpLabel">Japanisch</span>
+            <label>
+              <input type="checkbox" id="romajiToggle" checked />
+              Romaji anzeigen
+            </label>
+          </div>
+
+          <div class="japanese" id="japaneseText"></div>
+          <div class="romaji" id="romajiText"></div>
+
+          <div class="controls">
+            <button class="btn-primary" id="revealButton">Antwort anzeigen</button>
+
+            <div class="controls-row">
+              <button class="btn-secondary" id="btnUnknown">Nicht gewusst</button>
+              <button class="btn-primary" id="btnKnown">Gewusst</button>
+            </div>
+
+            <div class="controls-row">
+              <button class="btn-secondary btn-small" id="btnSpeak">Ton anhören</button>
+              <button class="btn-secondary btn-small" id="btnNext">Nächste Karte</button>
+            </div>
+
+            <div class="info-text">
+              Tipp: Versuche zuerst, die japanische Version im Kopf zu bilden,
+              dann tippe auf „Antwort anzeigen“. Markiere danach, ob du die Karte wusstest.
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <div class="footer">
+      <span id="footerText">Bereit zum Lernen.</span>
+      <button id="resetTodayButton">Heute zurücksetzen</button>
+    </div>
+  </div>
+
+  <script>
+    // ---------- Daten: Kategorien, Wörter, Sätze ----------
+
+    const CATEGORIES = [
+      {
+        id: "restaurant",
+        name: "Restaurant",
+        words: [
+          { en: "table", jp: "つくえ", romaji: "tsukue" },
+          { en: "menu", jp: "メニュー", romaji: "menyuu" },
+          { en: "water", jp: "みず", romaji: "mizu" },
+          { en: "beer", jp: "ビール", romaji: "biiru" },
+          { en: "bill / check", jp: "おかんじょう", romaji: "okanjou" },
+          { en: "reservation", jp: "よやく", romaji: "yoyaku" },
+          { en: "recommendation", jp: "おすすめ", romaji: "osusume" },
+          { en: "delicious", jp: "おいしい", romaji: "oishii" },
+          { en: "allergy", jp: "アレルギー", romaji: "arerugii" },
+          { en: "vegetarian", jp: "ベジタリアン", romaji: "bejitarian" }
+        ],
+        sentences: [
+          {
+            en: "A table for two, please.",
+            jp: "ふたりようの テーブルを おねがいします。",
+            romaji: "futariyou no teeburu o onegaishimasu."
+          },
+          {
+            en: "May I have the menu?",
+            jp: "メニューを おねがいします。",
+            romaji: "menyuu o onegaishimasu."
+          },
+          {
+            en: "I would like water, please.",
+            jp: "みずを おねがいします。",
+            romaji: "mizu o onegaishimasu."
+          },
+          {
+            en: "One beer, please.",
+            jp: "ビールを ひとつ ください。",
+            romaji: "biiru o hitotsu kudasai."
+          },
+          {
+            en: "What do you recommend?",
+            jp: "おすすめは なんですか。",
+            romaji: "osusume wa nan desu ka."
+          },
+          {
+            en: "This is delicious.",
+            jp: "これは とても おいしいです。",
+            romaji: "kore wa totemo oishii desu."
+          },
+          {
+            en: "I am vegetarian.",
+            jp: "わたしは ベジタリアンです。",
+            romaji: "watashi wa bejitarian desu."
+          },
+          {
+            en: "I have a nut allergy.",
+            jp: "わたしは ナッツの アレルギーが あります。",
+            romaji: "watashi wa nattsu no arerugii ga arimasu."
+          },
+          {
+            en: "I have a reservation.",
+            jp: "よやくを しています。",
+            romaji: "yoyaku o shiteimasu."
+          },
+          {
+            en: "The bill, please.",
+            jp: "おかんじょうを おねがいします。",
+            romaji: "okanjou o onegaishimasu."
+          }
+        ]
+      },
+      {
+        id: "shopping",
+        name: "Einkaufen",
+        words: [
+          { en: "shop / store", jp: "みせ", romaji: "mise" },
+          { en: "price", jp: "ねだん", romaji: "nedan" },
+          { en: "how much", jp: "いくら", romaji: "ikura" },
+          { en: "size", jp: "サイズ", romaji: "saizu" },
+          { en: "color", jp: "いろ", romaji: "iro" },
+          { en: "fitting room", jp: "しちゃくしつ", romaji: "shichakushitsu" },
+          { en: "cash", jp: "げんきん", romaji: "genkin" },
+          { en: "credit card", jp: "クレジットカード", romaji: "kurejitto kaado" },
+          { en: "receipt", jp: "レシート", romaji: "reshiito" },
+          { en: "discount / sale", jp: "セール", romaji: "seeru" }
+        ],
+        sentences: [
+          {
+            en: "How much is this?",
+            jp: "これは いくらですか。",
+            romaji: "kore wa ikura desu ka."
+          },
+          {
+            en: "This price is too high.",
+            jp: "この ねだんは たかすぎます。",
+            romaji: "kono nedan wa takasugimasu."
+          },
+          {
+            en: "Do you have this in another size?",
+            jp: "ほかの サイズは ありますか。",
+            romaji: "hoka no saizu wa arimasu ka."
+          },
+          {
+            en: "Do you have this in another color?",
+            jp: "ほかの いろは ありますか。",
+            romaji: "hoka no iro wa arimasu ka."
+          },
+          {
+            en: "Where is the fitting room?",
+            jp: "しちゃくしつは どこですか。",
+            romaji: "shichakushitsu wa doko desu ka."
+          },
+          {
+            en: "I will take this.",
+            jp: "これを ください。",
+            romaji: "kore o kudasai."
+          },
+          {
+            en: "Can I pay in cash?",
+            jp: "げんきんで いいですか。",
+            romaji: "genkin de ii desu ka."
+          },
+          {
+            en: "Can I pay by credit card?",
+            jp: "クレジットカードは つかえますか。",
+            romaji: "kurejitto kaado wa tsukaemasu ka."
+          },
+          {
+            en: "Receipt, please.",
+            jp: "レシートを ください。",
+            romaji: "reshiito o kudasai."
+          },
+          {
+            en: "Is this on sale?",
+            jp: "これは セールですか。",
+            romaji: "kore wa seeru desu ka."
+          }
+        ]
+      },
+      {
+        id: "transport",
+        name: "Bus & Bahn",
+        words: [
+          { en: "train", jp: "でんしゃ", romaji: "densha" },
+          { en: "subway / metro", jp: "ちかてつ", romaji: "chikatetsu" },
+          { en: "bus", jp: "バス", romaji: "basu" },
+          { en: "station", jp: "えき", romaji: "eki" },
+          { en: "ticket", jp: "きっぷ", romaji: "kippu" },
+          { en: "platform", jp: "ホーム", romaji: "hoomu" },
+          { en: "line", jp: "せん", romaji: "sen" },
+          { en: "direction", jp: "ほうこう", romaji: "houkou" },
+          { en: "next", jp: "つぎ", romaji: "tsugi" },
+          { en: "transfer / change", jp: "のりかえ", romaji: "norikae" }
+        ],
+        sentences: [
+          {
+            en: "Where is the station?",
+            jp: "えきは どこですか。",
+            romaji: "eki wa doko desu ka."
+          },
+          {
+            en: "One ticket to Shibuya, please.",
+            jp: "しぶやまでの きっぷを ください。",
+            romaji: "shibuya made no kippu o kudasai."
+          },
+          {
+            en: "Which platform is for this line?",
+            jp: "この せんの ホームは どこですか。",
+            romaji: "kono sen no hoomu wa doko desu ka."
+          },
+          {
+            en: "Which train goes to Shinjuku?",
+            jp: "しんじゅくへ いく でんしゃは どれですか。",
+            romaji: "shinjuku e iku densha wa dore desu ka."
+          },
+          {
+            en: "Is this the right direction?",
+            jp: "これは ただしい ほうこうですか。",
+            romaji: "kore wa tadashii houkou desu ka."
+          },
+          {
+            en: "Where do I change trains?",
+            jp: "どこで のりかえますか。",
+            romaji: "doko de norikaemasu ka."
+          },
+          {
+            en: "When is the next train?",
+            jp: "つぎの でんしゃは いつですか。",
+            romaji: "tsugi no densha wa itsu desu ka."
+          },
+          {
+            en: "Is this a local train?",
+            jp: "これは かくえきの でんしゃですか。",
+            romaji: "kore wa kakueki no densha desu ka."
+          },
+          {
+            en: "Does this bus go to the station?",
+            jp: "この バスは えきへ いきますか。",
+            romaji: "kono basu wa eki e ikimasu ka."
+          },
+          {
+            en: "How long does it take?",
+            jp: "どのくらい かかりますか。",
+            romaji: "dono kurai kakarimasu ka."
+          }
+        ]
+      },
+      {
+        id: "office",
+        name: "Behörde",
+        words: [
+          { en: "city hall / ward office", jp: "やくしょ", romaji: "yakusho" },
+          { en: "residence card", jp: "ざいりゅうカード", romaji: "zairyuu kaado" },
+          { en: "visa", jp: "ビザ", romaji: "biza" },
+          { en: "application", jp: "もうしこみ", romaji: "moushikomi" },
+          { en: "form", jp: "しょるい", romaji: "shorui" },
+          { en: "number", jp: "ばんごう", romaji: "bangou" },
+          { en: "appointment", jp: "よやく", romaji: "yoyaku" },
+          { en: "address", jp: "じゅうしょ", romaji: "juusho" },
+          { en: "signature", jp: "サイン", romaji: "sain" },
+          { en: "tax number", jp: "ぜいむばんごう", romaji: "zeimu bangou" }
+        ],
+        sentences: [
+          {
+            en: "Where is the city hall?",
+            jp: "しやくしょは どこですか。",
+            romaji: "shiyakusho wa doko desu ka."
+          },
+          {
+            en: "I want to apply for a residence card.",
+            jp: "ざいりゅうカードを もうしこみたいです。",
+            romaji: "zairyuu kaado o moushikomitai desu."
+          },
+          {
+            en: "I want to renew my visa.",
+            jp: "ビザを こうしんしたいです。",
+            romaji: "biza o koushin shitai desu."
+          },
+          {
+            en: "Which form do I need?",
+            jp: "どの しょるいが ひつようですか。",
+            romaji: "dono shorui ga hitsuyou desu ka."
+          },
+          {
+            en: "Do I need an appointment?",
+            jp: "よやくは ひつようですか。",
+            romaji: "yoyaku wa hitsuyou desu ka."
+          },
+          {
+            en: "My address has changed.",
+            jp: "じゅうしょが かわりました。",
+            romaji: "juusho ga kawarimashita."
+          },
+          {
+            en: "My number is 25.",
+            jp: "わたしの ばんごうは ２５です。",
+            romaji: "watashi no bangou wa nijuu go desu."
+          },
+          {
+            en: "Where do I sign?",
+            jp: "どこに サインしますか。",
+            romaji: "doko ni sain shimasu ka."
+          },
+          {
+            en: "I need a tax number.",
+            jp: "ぜいむばんごうが ひつようです。",
+            romaji: "zeimu bangou ga hitsuyou desu."
+          },
+          {
+            en: "How long is the processing time?",
+            jp: "しょりは どのくらい かかりますか。",
+            romaji: "shori wa dono kurai kakarimasu ka."
+          }
+        ]
+      },
+      {
+        id: "work",
+        name: "Arbeit",
+        words: [
+          { en: "company", jp: "かいしゃ", romaji: "kaisha" },
+          { en: "colleague", jp: "どうりょう", romaji: "douryou" },
+          { en: "boss / manager", jp: "じょうし", romaji: "joushi" },
+          { en: "meeting", jp: "かいぎ", romaji: "kaigi" },
+          { en: "project", jp: "プロジェクト", romaji: "purojekuto" },
+          { en: "document", jp: "しょるい", romaji: "shorui" },
+          { en: "email", jp: "メール", romaji: "meeru" },
+          { en: "deadline", jp: "しめきり", romaji: "shimekiri" },
+          { en: "overtime", jp: "ざんぎょう", romaji: "zangyou" },
+          { en: "report", jp: "レポート", romaji: "repooto" }
+        ],
+        sentences: [
+          {
+            en: "I work at a company in Tokyo.",
+            jp: "わたしは とうきょうの かいしゃで はたらいています。",
+            romaji: "watashi wa toukyou no kaisha de hataraiteimasu."
+          },
+          {
+            en: "This is my colleague.",
+            jp: "こちらは わたしの どうりょうです。",
+            romaji: "kochira wa watashi no douryou desu."
+          },
+          {
+            en: "I have a meeting at ten.",
+            jp: "１０じに かいぎが あります。",
+            romaji: "juuji ni kaigi ga arimasu."
+          },
+          {
+            en: "I will send the document by email.",
+            jp: "しょるいを メールで おくります。",
+            romaji: "shorui o meeru de okurimasu."
+          },
+          {
+            en: "This project is important.",
+            jp: "この プロジェクトは たいせつです。",
+            romaji: "kono purojekuto wa taisetsu desu."
+          },
+          {
+            en: "When is the deadline?",
+            jp: "しめきりは いつですか。",
+            romaji: "shimekiri wa itsu desu ka."
+          },
+          {
+            en: "Today I have overtime.",
+            jp: "きょうは ざんぎょうが あります。",
+            romaji: "kyou wa zangyou ga arimasu."
+          },
+          {
+            en: "I will report it to my boss.",
+            jp: "じょうしに レポートします。",
+            romaji: "joushi ni repooto shimasu."
+          },
+          {
+            en: "Can we talk after the meeting?",
+            jp: "かいぎの あとで はなしても いいですか。",
+            romaji: "kaigi no ato de hanashite mo ii desu ka."
+          },
+          {
+            en: "I like my team.",
+            jp: "わたしは チームが すきです。",
+            romaji: "watashi wa chiimu ga suki desu."
+          }
+        ]
+      }
+    ];
+
+    // ---------- State & Storage ----------
+
+    const STORAGE_KEY = "ej_flashcards_state_v1";
+
+    let state = {
+      todayDate: null,
+      todayReviewed: 0,
+      streak: 0,
+      lastSessionDate: null,
+      mode: "words", // "words" | "sentences"
+      categoryId: null,
+      queue: [],
+      currentIndex: 0
+    };
+
+    function loadState() {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        try {
+          const obj = JSON.parse(raw);
+          state = { ...state, ...obj };
+        } catch {}
+      }
+      const today = new Date().toDateString();
+      if (state.todayDate !== today) {
+        state.todayDate = today;
+        state.todayReviewed = 0;
+      }
+      if (state.lastSessionDate && state.lastSessionDate !== today) {
+        const last = new Date(state.lastSessionDate);
+        const t = new Date(today);
+        const diff = Math.round((t - last) / (1000*60*60*24));
+        if (diff === 1) state.streak += 1;
+        else if (diff > 1) state.streak = 1;
+      }
+      if (!state.streak) state.streak = 1;
+    }
+
+    function saveState() {
+      state.lastSessionDate = state.todayDate;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    function resetToday() {
+      const today = new Date().toDateString();
+      state.todayDate = today;
+      state.todayReviewed = 0;
+      saveState();
+      updateHeaderAndFooter();
+    }
+
+    // ---------- UI Helpers ----------
+
+    const screenHome = document.getElementById("screenHome");
+    const screenLearn = document.getElementById("screenLearn");
+    const headerSubtitle = document.getElementById("headerSubtitle");
+    const homeButton = document.getElementById("homeButton");
+
+    const todayInfo = document.getElementById("todayInfo");
+    const streakInfo = document.getElementById("streakInfo");
+    const footerText = document.getElementById("footerText");
+
+    const categoryList = document.getElementById("categoryList");
+
+    const modeInfo = document.getElementById("modeInfo");
+    const counterInfo = document.getElementById("counterInfo");
+    const progressFill = document.getElementById("progressFill");
+
+    const englishText = document.getElementById("englishText");
+    const japaneseText = document.getElementById("japaneseText");
+    const romajiText = document.getElementById("romajiText");
+    const labelType = document.getElementById("labelType");
+    const jpLabel = document.getElementById("jpLabel");
+    const romajiToggle = document.getElementById("romajiToggle");
+
+    const revealButton = document.getElementById("revealButton");
+    const btnUnknown = document.getElementById("btnUnknown");
+    const btnKnown = document.getElementById("btnKnown");
+    const btnSpeak = document.getElementById("btnSpeak");
+    const btnNext = document.getElementById("btnNext");
+    const resetTodayButton = document.getElementById("resetTodayButton");
+
+    function showScreen(name) {
+      if (name === "home") {
+        screenHome.classList.add("active");
+        screenLearn.classList.remove("active");
+        headerSubtitle.textContent = "Kategorie wählen";
+        homeButton.style.display = "none";
+      } else {
+        screenHome.classList.remove("active");
+        screenLearn.classList.add("active");
+        homeButton.style.display = "inline-flex";
+      }
+    }
+
+    function updateHeaderAndFooter() {
+      if (state.todayReviewed === 0) {
+        todayInfo.textContent = "Heute noch nicht gelernt.";
+      } else {
+        todayInfo.textContent = `Heute gelernt: ${state.todayReviewed} Karten.`;
+      }
+      streakInfo.textContent = `Streak: ${state.streak} Tage`;
+      footerText.textContent = "Tippe eine Kategorie an, um zu starten.";
+    }
+
+    function renderCategories() {
+      categoryList.innerHTML = "";
+      CATEGORIES.forEach(cat => {
+        const card = document.createElement("div");
+        card.className = "category-card";
+
+        const title = document.createElement("div");
+        title.className = "category-title";
+        title.textContent = cat.name;
+
+        const progress = document.createElement("div");
+        progress.className = "category-progress";
+        progress.textContent = `10 Wörter · 10 Sätze`;
+
+        const btnRow = document.createElement("div");
+        btnRow.className = "category-buttons";
+
+        const btnWords = document.createElement("button");
+        btnWords.className = "btn-primary";
+        btnWords.textContent = "Wörter lernen";
+        btnWords.onclick = () => startSession(cat.id, "words");
+
+        const btnSentences = document.createElement("button");
+        btnSentences.className = "btn-secondary";
+        btnSentences.textContent = "Sätze lernen";
+        btnSentences.onclick = () => startSession(cat.id, "sentences");
+
+        btnRow.appendChild(btnWords);
+        btnRow.appendChild(btnSentences);
+
+        card.appendChild(title);
+        card.appendChild(progress);
+        card.appendChild(btnRow);
+
+        categoryList.appendChild(card);
+      });
+    }
+
+    // ---------- Lernlogik ----------
+
+    function getCategoryById(id) {
+      return CATEGORIES.find(c => c.id === id);
+    }
+
+    function startSession(categoryId, mode) {
+      const cat = getCategoryById(categoryId);
+      if (!cat) return;
+
+      state.categoryId = categoryId;
+      state.mode = mode;
+
+      const items = mode === "words" ? cat.words : cat.sentences;
+      state.queue = items.map((item, index) => ({ index, item }));
+      // einfache Mischung
+      state.queue.sort(() => Math.random() - 0.5);
+      state.currentIndex = 0;
+
+      headerSubtitle.textContent = `${cat.name} – ${mode === "words" ? "Wörter" : "Sätze"}`;
+      modeInfo.textContent = mode === "words" ? `Wörter – ${cat.name}` : `Sätze – ${cat.name}`;
+      footerText.textContent = "Karte ansehen, dann Antwort anzeigen.";
+
+      showScreen("learn");
+      renderCurrentCard(false);
+      saveState();
+    }
+
+    function renderCurrentCard(revealed) {
+      const cat = getCategoryById(state.categoryId);
+      if (!cat || state.queue.length === 0) return;
+
+      const { index, item } = state.queue[state.currentIndex];
+
+      labelType.textContent = "Englisch";
+      jpLabel.textContent = "Japanisch";
+
+      englishText.textContent = item.en;
+
+      if (revealed) {
+        japaneseText.textContent = item.jp;
+        romajiText.textContent = romajiToggle.checked ? item.romaji : "";
+        revealButton.textContent = "Antwort verstecken";
+      } else {
+        japaneseText.textContent = "••••••••";
+        romajiText.textContent = "";
+        revealButton.textContent = "Antwort anzeigen";
+      }
+
+      const total = state.queue.length;
+      const current = state.currentIndex + 1;
+      counterInfo.textContent = `${current} / ${total}`;
+      progressFill.style.width = `${(current / total) * 100}%`;
+    }
+
+    function revealToggle() {
+      const isHidden = japaneseText.textContent === "••••••••";
+      renderCurrentCard(isHidden);
+    }
+
+    function markCard(known) {
+      state.todayReviewed += 1;
+      footerText.textContent = known
+        ? "Super! Du hast die Karte gewusst."
+        : "Alles gut, die Karte kommt später noch einmal.";
+
+      // einfache Wiederholung: wenn nicht gewusst, Karte ans Ende hängen
+      if (!known) {
+        const current = state.queue[state.currentIndex];
+        state.queue.push(current);
+      }
+
+      nextCard();
+    }
+
+    function nextCard() {
+      if (state.currentIndex < state.queue.length - 1) {
+        state.currentIndex += 1;
+        renderCurrentCard(false);
+      } else {
+        footerText.textContent = "Session beendet. Wähle eine Kategorie für mehr.";
+        showScreen("home");
+        renderCategories();
+      }
+      saveState();
+      updateHeaderAndFooter();
+    }
+
+    function speakCurrent() {
+      if (!("speechSynthesis" in window)) {
+        alert("Sprachausgabe wird von diesem Browser nicht unterstützt.");
+        return;
+      }
+      const cat = getCategoryById(state.categoryId);
+      if (!cat || state.queue.length === 0) return;
+      const { item } = state.queue[state.currentIndex];
+
+      window.speechSynthesis.cancel();
+      const utt = new SpeechSynthesisUtterance(item.jp);
+      utt.lang = "ja-JP";
+      const voices = window.speechSynthesis.getVoices();
+      const ja = voices.find(v => v.lang && v.lang.startsWith("ja"));
+      if (ja) utt.voice = ja;
+      window.speechSynthesis.speak(utt);
+    }
+
+    // ---------- Events ----------
+
+    homeButton.addEventListener("click", () => {
+      showScreen("home");
+      renderCategories();
+      footerText.textContent = "Bereit zum Lernen.";
+    });
+
+    revealButton.addEventListener("click", revealToggle);
+    btnKnown.addEventListener("click", () => markCard(true));
+    btnUnknown.addEventListener("click", () => markCard(false));
+    btnSpeak.addEventListener("click", speakCurrent);
+    btnNext.addEventListener("click", nextCard);
+    resetTodayButton.addEventListener("click", () => {
+      if (confirm("Heutige Zählung zurücksetzen?")) {
+        resetToday();
+      }
+    });
+
+    romajiToggle.addEventListener("change", () => {
+      const opened = japaneseText.textContent !== "••••••••";
+      if (opened) renderCurrentCard(true);
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if (screenLearn.classList.contains("active")) {
+        if (e.key === "ArrowRight") {
+          markCard(true);
+        } else if (e.key === "ArrowLeft") {
+          markCard(false);
+        } else if (e.key === " ") {
+          e.preventDefault();
+          revealToggle();
+        }
+      }
+    });
+
+    // ---------- Init ----------
+
+    loadState();
+    updateHeaderAndFooter();
+    renderCategories();
+  </script>
+</body>
+</html>
